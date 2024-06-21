@@ -17,7 +17,18 @@ class ProfileUpdateRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
+            'username' => ['required', 'string', 'max:255', 'regex:/^[a-z0-9.-]+$/'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique(User::class)->ignore($this->user()->id)],
+        ];
+    }
+
+    /**
+     * @return string[]
+     */
+    public function messages (): array
+    {
+        return [
+            'regex' => 'Username can only contain alphanumeric lowercase characters, dash (-) and dot (.).'
         ];
     }
 }
