@@ -1,15 +1,19 @@
 <script setup>
 import { TabGroup, TabList, Tab, TabPanels, TabPanel } from '@headlessui/vue'
+import { usePage, useForm } from "@inertiajs/vue3";
+import { computed, ref } from "vue";
+import { XMarkIcon, CameraIcon, PencilIcon, CheckCircleIcon } from '@heroicons/vue/24/outline'
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import TabItem from "@/Pages/Profile/Partials/TabItem.vue";
 import Edit from "@/Pages/Profile/Edit.vue";
 import PrimaryButton from "@/Components/PrimaryButton.vue";
-import {usePage} from "@inertiajs/vue3";
-import {computed} from "vue";
 
 const authUser = usePage().props.auth.user;
+const coverImageSrc = ref('')
+const showNotification = ref(true)
 
 const props = defineProps({
+    errors: Object,
     mustVerifyEmail: {
         type: Boolean,
     },
@@ -21,25 +25,117 @@ const props = defineProps({
     }
 });
 
+const imagesForm = useForm({
+    avatar: null,
+    cover: null,
+})
+
+
+/**
+ * Propriété calculée vérifiant que le user est connecté et que c'est le même user qui regarde la
+ * page de profil About
+ * @type {ComputedRef<unknown>}
+ */
 const isMyProfile = computed(() => authUser && authUser.id === props.user.id)
+
+/**
+ * Modifier l'image bg de profil
+ * @param e
+ */
+function onCoverChange(e) {
+    imagesForm.cover = e.target.files[0];
+    if (imagesForm.cover) {
+        const reader = new FileReader()
+        reader.onload = () => {
+            coverImageSrc.value = reader.result
+        }
+        reader.readAsDataURL(imagesForm.cover)
+    }
+}
+
+/**
+ * Annuler image bg de profil
+ */
+function cancelCoverImage() {
+    imagesForm.cover = null
+    coverImageSrc.value = null
+}
+
+/**
+ * Soumettre image bg de profil
+ */
+function submitCoverImage() {
+    imagesForm.post(route('profile.updateImage'), {
+        onSuccess: () => {
+            cancelCoverImage()
+            setTimeout(() => {
+                showNotification.value = false
+            }, 3000)
+        }
+    })
+}
 
 </script>
 
 <template>
     <AuthenticatedLayout>
-        <div class="w-[768px] mx-auto h-full overflow-auto">
-            <div class="relative bg-white">
+        <div class="max-w-[768px] mx-auto h-full overflow-auto">
+            <!-- Notification si succès modification -->
+            <div
+                v-show="showNotification && status === 'cover-image-update'"
+                class="my-2 py-2 px-3 font-medium text-sm bg-emerald-500 text-white"
+            >
+                Your cover image has been updated.
+            </div>
+
+            <!-- Notification si erreur sur extension de l'image -->
+            <div
+                v-if="errors.cover"
+                class="my-2 py-2 px-3 font-medium text-sm bg-red-500 text-white"
+            >
+                {{ errors.cover }}
+            </div>
+            <div class="group relative bg-white">
                 <!-- Cover -->
                 <img
-                    src="https://traveloffice.org/wp-content/uploads/2018/09/fall-pictures-facebook-cover-photo-1920x500.jpg"
+                    :src="coverImageSrc || user.cover_url || '/image/default_cover.jpg'"
                     alt=""
                     class="w-full h-[200px] object-cover"
                 >
 
+                <div class="absolute top-2 right-2">
+                    <button
+                        v-if="!coverImageSrc"
+                        class="bg-gray-50 hover:bg-gray-100 text-gray-800 py-1 px-2 text-xs flex items-center opacity-0 group-hover:opacity-100">
+                        <CameraIcon class="w-3 h-3 mr-2" />
+                        Update Cover Image
+                        <input
+                            type="file"
+                            class="absolute left-0 top-0 right-0 bottom-0 opacity-0"
+                            @change="onCoverChange"
+                        >
+                    </button>
+                    <div v-else class="flex gap-2 bg-white p-2 opacity-0 group-hover:opacity-100">
+                        <button
+                            @click="cancelCoverImage"
+                            class="bg-gray-200 hover:bg-gray-300 text-gray-800 py-1 px-2 text-xs flex items-center"
+                        >
+                            <XMarkIcon class="w-3 h-3 mr-2" />
+                            Cancel
+                        </button>
+                        <button
+                            @click="submitCoverImage"
+                            class="bg-gray-800 hover:bg-gray-900 text-gray-100 py-1 px-2 text-xs flex items-center"
+                        >
+                            <CheckCircleIcon class="w-3 h-3 mr-2" />
+                            Submit
+                        </button>
+                    </div>
+                </div>
+
                 <div class="flex ">
                     <!-- Avatar -->
-                    <img
-                        src="https://cdn.iconscout.com/icon/free/png-512/free-avatar-369-456321.png?f=webp"
+                    <img src="/image/default_avatar.webp"
                         alt=""
                         class="w-[96px] h-[96px] ml-[36px] -mt-[34px]"
                     >
@@ -47,10 +143,7 @@ const isMyProfile = computed(() => authUser && authUser.id === props.user.id)
                     <div class="flex justify-between items-center flex-1 p-4">
                         <h2 class="font-bold text-lg">{{ user.name }}</h2>
                         <PrimaryButton v-if="isMyProfile">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 mr-2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
-                            </svg>
-
+                            <PencilIcon class="w-4 h-4 mr-2" />
                             Edit Profile
                         </PrimaryButton>
                     </div>
