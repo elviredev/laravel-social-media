@@ -26,6 +26,7 @@ class ProfileController extends Controller
         return Inertia::render('Profile/View', [
             'mustVerifyEmail' => $user instanceof MustVerifyEmail,
             'status' => session('status'),
+            'success' => session('success'),
             'user' => new UserResource($user)
         ]);
     }
@@ -86,6 +87,8 @@ class ProfileController extends Controller
         /** @var UploadedFile $cover*/
         $cover = $data['cover'] ?? null;
 
+        $success = '';
+
         if ($cover) {
             // supprimer l'ancienne image dans le stockage
             if ($user->cover_path) {
@@ -94,10 +97,22 @@ class ProfileController extends Controller
             // enregistrer la nouvelle image dans le stockage et en bdd
             $path = $cover->store('user-'.$user->id, 'public');
             $user->update(['cover_path' => $path]);
+            $success = 'Your cover image was updated.';
         }
 
-        session('success', 'Cover image has been updated');
+        if ($avatar) {
+            // supprimer l'ancienne image dans le stockage
+            if ($user->avatar_path) {
+                Storage::disk('public')->delete($user->avatar_path);
+            }
+            // enregistrer la nouvelle image dans le disk public et en bdd
+            $path = $avatar->store('user-'.$user->id, 'public');
+            $user->update(['avatar_path' => $path]);
+            $success = 'Your avatar image was updated.';
+        }
 
-        return back()->with('status', 'cover-image-update');
+//        session('success', 'Avatar image has been updated');
+
+        return back()->with('success', $success);
     }
 }
