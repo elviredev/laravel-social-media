@@ -18,7 +18,7 @@ function isImage(attachment) {
         <!-- Header -->
         <div class="flex items-center gap-2 mb-3">
             <a href="javascript:void(0)">
-                <img :src="post.user.avatar" alt="" class="w-[40px] rounded-full border border-2 transition-all hover:border-blue-500">
+                <img :src="post.user.avatar_url" alt="" class="w-[40px] rounded-full border border-2 transition-all hover:border-blue-500">
             </a>
             <div>
                 <h4 class="font-bold">
