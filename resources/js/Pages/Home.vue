@@ -9,15 +9,13 @@ import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 defineProps({
   posts: Object
 });
-
-
 </script>
 
 <template>
     <Head title="Social Media Website" />
 
     <AuthenticatedLayout>
-<!--        <pre>{{posts}}</pre>-->
+        <!-- <pre>{{posts}}</pre>-->
         <div class="grid lg:grid-cols-12 gap-3 p-4 h-full">
         <!-- Partie gauche - Groupes -->
         <div class="lg:col-span-3 lg:order-1 h-full overflow-hidden">

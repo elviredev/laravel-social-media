@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref, watch } from 'vue';
+import { onMounted, ref } from 'vue';
 
 const props = defineProps({
   modelValue: {
@@ -38,11 +38,17 @@ function onInputChange($event) {
     autoResize();
   }
 }
+
+onMounted(() => {
+  if (props.autoResize) {
+    autoResize();
+  }
+})
 </script>
 
 <template>
     <textarea
-        class="border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-sm resize-none"
+        class="border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-sky-500 dark:focus:border-sky-600 focus:ring-sky-500 dark:focus:ring-sky-600 rounded-md shadow-sm resize-none"
         :value="props.modelValue"
         @input="onInputChange"
         ref="textareaRef"
