@@ -43,7 +43,7 @@ import { useForm } from "@inertiajs/vue3";
   }
 
   function handleSubmit() {
-    form.post(route('post.update', props.post.id), {
+    form.put(route('post.update', props.post.id), {
       preserveScroll: true,
       onSuccess: () => {
         show.value = false
