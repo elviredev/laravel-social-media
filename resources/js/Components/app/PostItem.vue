@@ -4,6 +4,7 @@ import { ArrowDownTrayIcon, DocumentIcon, HandThumbUpIcon, ChatBubbleLeftRightIc
 import { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/vue'
 import { PencilIcon, TrashIcon, EllipsisVerticalIcon } from '@heroicons/vue/20/solid'
 import PostUserHeader from "@/Components/app/PostUserHeader.vue";
+import { router } from "@inertiajs/vue3";
 
 const props = defineProps({
     post: Object
@@ -18,6 +19,14 @@ function isImage(attachment) {
 
 function openEditModal() {
   emit('editClick', props.post)
+}
+
+function deletePost() {
+  if (window.confirm('Are you sure you want to delete this post?')) {
+    router.delete(route('post.destroy', props.post.id), {
+      preserveScroll: true,
+    })
+  }
 }
 
 </script>
@@ -58,24 +67,19 @@ function openEditModal() {
                       'group flex w-full items-center rounded-md px-2 py-2 text-sm',
                     ]"
                   >
-                    <PencilIcon
-                      class="mr-2 h-5 w-5"
-                      aria-hidden="true"
-                    />
+                    <PencilIcon class="mr-2 h-5 w-5" aria-hidden="true"/>
                     Edit
                   </button>
                 </MenuItem>
                 <MenuItem v-slot="{ active }">
                   <button
+                    @click="deletePost"
                     :class="[
                       active ? 'bg-sky-500 text-white' : 'text-gray-900',
                       'group flex w-full items-center rounded-md px-2 py-2 text-sm',
                     ]"
                   >
-                    <TrashIcon
-                      class="mr-2 h-5 w-5"
-                      aria-hidden="true"
-                    />
+                    <TrashIcon class="mr-2 h-5 w-5" aria-hidden="true"/>
                     Delete
                   </button>
                 </MenuItem>
