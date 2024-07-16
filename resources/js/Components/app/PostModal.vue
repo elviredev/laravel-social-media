@@ -1,16 +1,35 @@
 <script setup>
-import {computed, watch} from 'vue'
+  import {computed, watch} from 'vue'
+    import {
+    TransitionRoot,
+    TransitionChild,
+    Dialog,
+    DialogPanel,
+    DialogTitle,
+  } from '@headlessui/vue'
+  import InputTextarea from "@/Components/InputTextarea.vue";
+  import PostUserHeader from "@/Components/app/PostUserHeader.vue";
+  import { XMarkIcon } from '@heroicons/vue/24/solid'
+  import { useForm } from "@inertiajs/vue3";
   import {
-  TransitionRoot,
-  TransitionChild,
-  Dialog,
-  DialogPanel,
-  DialogTitle,
-} from '@headlessui/vue'
-import InputTextarea from "@/Components/InputTextarea.vue";
-import PostUserHeader from "@/Components/app/PostUserHeader.vue";
-import { XMarkIcon } from '@heroicons/vue/24/solid'
-import { useForm } from "@inertiajs/vue3";
+    ClassicEditor,
+    Bold,
+    Essentials,
+    Italic,
+    Heading,
+    Paragraph,
+    List,
+    Link,
+    Indent,
+    BlockQuote
+  } from "ckeditor5";
+  import 'ckeditor5/ckeditor5.css';
+
+  const editor = ClassicEditor
+  const editorConfig = {
+    plugins: [ Bold, Essentials, Italic, Paragraph, Heading, Link, List, Indent, BlockQuote],
+    toolbar: [ 'heading', '|', 'bold', 'italic', '|', 'link', '|', 'bulletedList', 'numberedList', '|', 'outdent', 'indent', '|', 'blockQuote']
+  }
 
   const props = defineProps({
     post: {
@@ -96,7 +115,8 @@ import { useForm } from "@inertiajs/vue3";
                 </DialogTitle>
                 <div class="p-4">
                   <PostUserHeader :post="post" :show-time = false class="mb-4" />
-                  <InputTextarea v-model="form.body" class="mb-3 w-full" />
+                  <ckeditor :editor="editor" v-model="form.body" :config="editorConfig"></ckeditor>
+<!--                  <InputTextarea v-model="form.body" class="mb-3 w-full" />-->
                 </div>
 
                 <div class="py-3 px-4">

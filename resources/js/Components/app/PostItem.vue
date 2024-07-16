@@ -92,9 +92,9 @@ function deletePost() {
     <!-- Contenu article -->
     <div class="mb-3">
       <Disclosure v-slot="{ open }">
-        <div v-if="!open" v-html="post.body.substring(0, 200)" />
+        <div class="ck-content-output" v-if="!open" v-html="post.body.substring(0, 200)" />
         <DisclosurePanel>
-          <div v-html="post.body" />
+          <div class="ck-content-output" v-html="post.body" />
         </DisclosurePanel>
         <div class="flex justify-end">
           <DisclosureButton v-if="post.body.length >= 200" class="text-blue-500 hover:underline">
