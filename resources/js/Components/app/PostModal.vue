@@ -1,13 +1,12 @@
 <script setup>
   import {computed, watch} from 'vue'
-    import {
+  import {
     TransitionRoot,
     TransitionChild,
     Dialog,
     DialogPanel,
     DialogTitle,
   } from '@headlessui/vue'
-  import InputTextarea from "@/Components/InputTextarea.vue";
   import PostUserHeader from "@/Components/app/PostUserHeader.vue";
   import { XMarkIcon } from '@heroicons/vue/24/solid'
   import { useForm } from "@inertiajs/vue3";
@@ -62,12 +61,22 @@
   }
 
   function handleSubmit() {
-    form.put(route('post.update', props.post.id), {
-      preserveScroll: true,
-      onSuccess: () => {
-        show.value = false
-      }
-    })
+    if (form.id) { // update Post
+      form.put(route('post.update', props.post.id), {
+        preserveScroll: true,
+        onSuccess: () => {
+          show.value = false
+          form.reset()
+        }
+      })
+    } else { // create Post
+      form.post(route('post.create'), {
+        onSuccess: () => {
+          show.value = false
+          form.reset()
+        }
+      });
+    }
   }
 
 </script>
@@ -108,7 +117,7 @@
                   as="h3"
                   class="flex items-center justify-between py-3 px-4 font-medium bg-gray-100 text-gray-900"
                 >
-                  Update Post
+                  {{ form.id ? 'Update Post' : 'Create Post' }}
                   <button @click="show = false" class="w-8 h-8 rounded-full hover:bg-black/5 transition flex items-center justify-center">
                     <XMarkIcon class="w-4 h-4" />
                   </button>
