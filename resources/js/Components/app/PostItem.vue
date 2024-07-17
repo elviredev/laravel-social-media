@@ -5,6 +5,7 @@ import { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/vue'
 import { PencilIcon, TrashIcon, EllipsisVerticalIcon } from '@heroicons/vue/20/solid'
 import PostUserHeader from "@/Components/app/PostUserHeader.vue";
 import { router } from "@inertiajs/vue3";
+import { isImage } from "@/helpers.js";
 
 const props = defineProps({
     post: Object
@@ -12,10 +13,7 @@ const props = defineProps({
 
 const emit = defineEmits(['editClick'])
 
-function isImage(attachment) {
-    const mime = attachment.mime.split('/')
-    return mime[0].toLowerCase() === 'image'
-}
+
 
 function openEditModal() {
   emit('editClick', props.post)
@@ -107,26 +105,25 @@ function deletePost() {
     <!-- Pièces Jointes -->
     <div class="grid grid-cols-2 gap-3 lg:grid-cols-3 mb-3">
       <template v-for="attachment of post.attachments">
+        <div class="group aspect-square bg-blue-100 text-gray-500 flex flex-col items-center justify-center relative">
+              <!-- Bouton Icon Download -->
+              <button class="opacity-0 group-hover:opacity-100 transition-all w-8 h-8 flex items-center justify-center bg-gray-700 text-gray-100 rounded absolute right-2 top-2 cursor-pointer hover:bg-gray-800">
+                  <ArrowDownTrayIcon class="w-4 h-4"/>
+              </button>
 
-            <div class="group aspect-square bg-blue-100 text-gray-500 flex flex-col items-center justify-center relative">
-                <!-- Bouton Icon Download -->
-                <button class="opacity-0 group-hover:opacity-100 transition-all w-8 h-8 flex items-center justify-center bg-gray-700 text-gray-100 rounded absolute right-2 top-2 cursor-pointer hover:bg-gray-800">
-                    <ArrowDownTrayIcon class="w-4 h-4"/>
-                </button>
+              <img
+                  v-if="isImage(attachment)"
+                  :src="attachment.url"
+                  alt=""
+                  class="object-cover aspect-square"
+              />
 
-                <img
-                    v-if="isImage(attachment)"
-                    :src="attachment.url"
-                    alt=""
-                    class="object-cover aspect-square"
-                />
-
-                <template v-else>
-                    <DocumentIcon class="w-12 h-12" />
-                    <small>{{attachment.name}}</small>
-                </template>
-            </div>
-        </template>
+              <template v-else>
+                  <DocumentIcon class="w-12 h-12" />
+                  <small>{{attachment.name}}</small>
+              </template>
+          </div>
+      </template>
     </div>
 
     <!-- Like & Comments -->
