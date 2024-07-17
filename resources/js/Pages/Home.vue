@@ -12,26 +12,26 @@ defineProps({
 </script>
 
 <template>
-    <Head title="Social Media Website" />
+  <Head title="Social Media Website" />
 
-    <AuthenticatedLayout>
-        <!-- <pre>{{posts}}</pre>-->
-        <div class="grid lg:grid-cols-12 gap-3 p-4 h-full">
-        <!-- Partie gauche - Groupes -->
-        <div class="lg:col-span-3 lg:order-1 h-full overflow-hidden">
-            <GroupList />
-        </div>
+  <AuthenticatedLayout>
+    <!-- <pre>{{posts}}</pre>-->
+    <div class="grid lg:grid-cols-12 gap-3 p-4 h-full">
+      <!-- Partie gauche - Groupes -->
+      <div class="lg:col-span-3 lg:order-1 h-full overflow-hidden">
+        <GroupList />
+      </div>
 
-        <!-- Partie droite (sur ecran large) - Abonnements -->
-        <div class="lg:col-span-3 lg:order-3 h-full overflow-hidden">
-            <FollowingList />
-        </div>
+      <!-- Partie droite (sur ecran large) - Abonnements -->
+      <div class="lg:col-span-3 lg:order-3 h-full overflow-hidden">
+        <FollowingList />
+      </div>
 
-        <!-- Partie main - Articles -->
-        <div class="lg:col-span-6 lg:order-2 h-full overflow-hidden flex flex-col">
-            <CreatePost />
-            <PostList :posts="posts.data" class="flex-1" />
-        </div>
-    </div>
+      <!-- Partie main - Articles -->
+      <div class="lg:col-span-6 lg:order-2 h-full overflow-hidden flex flex-col">
+        <CreatePost />
+        <PostList :posts="posts.data" class="flex-1" />
+      </div>
+  </div>
     </AuthenticatedLayout>
 </template>

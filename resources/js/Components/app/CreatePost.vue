@@ -44,7 +44,3 @@ function showCreatePostModal() {
     <PostModal :post="newPost" v-model="showModal" />
   </div>
 </template>
-
-<style scoped>
-
-</style>

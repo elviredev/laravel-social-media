@@ -2,6 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer components {
+  .btn-outline {
+    @apply flex items-center justify-center rounded-md bg-transparent border border-sky-600 text-sky-700 px-3 py-2 text-sm font-semibold text-sky-700 shadow-sm hover:bg-sky-600 hover:border-transparent hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600 w-full relative;
+  }
+  .btn-not-outline {
+    @apply flex items-center justify-center rounded-md bg-sky-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-transparent hover:border hover:border-sky-600 hover:text-sky-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600 w-full;
+  }
+}
+
 #app {
   height: 100%;
 }

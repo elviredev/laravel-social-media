@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, watch } from 'vue'
+  import { computed, ref, watch } from 'vue'
   import { TransitionRoot, TransitionChild, Dialog, DialogPanel, DialogTitle } from '@headlessui/vue'
   import PostUserHeader from "@/Components/app/PostUserHeader.vue";
   import { XMarkIcon, BookmarkIcon } from '@heroicons/vue/24/solid'
@@ -81,17 +81,17 @@ import { computed, ref, watch } from 'vue'
  * @returns {Promise<void>}
  */
 async function onAttachmentChoose($event) {
-    // console.log($event.target.files)
-    for (const file of $event.target.files) {
-      const myFile = {
-        file,
-        url: await readFile(file)
-      }
-      attachmentFiles.value.push(myFile)
+  // console.log($event.target.files)
+  for (const file of $event.target.files) {
+    const myFile = {
+      file,
+      url: await readFile(file)
     }
-    $event.target.value = null
-    console.log(attachmentFiles.value)
+    attachmentFiles.value.push(myFile)
   }
+  $event.target.value = null
+  console.log(attachmentFiles.value)
+}
 
 /**
  * Lire les fichiers
@@ -99,18 +99,18 @@ async function onAttachmentChoose($event) {
  * @returns {Promise<unknown>}
  */
 async function readFile(file) {
-    return new Promise((res, rej) => {
-      if (isImage(file)) {
-        const reader = new FileReader();
-        reader.onload = () => {
-          res(reader.result)
-        }
-        reader.onerror = rej
-        reader.readAsDataURL(file)
-      } else {
-        res(null)
+  return new Promise((res, rej) => {
+    if (isImage(file)) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        res(reader.result)
       }
-    })
+      reader.onerror = rej
+      reader.readAsDataURL(file)
+    } else {
+      res(null)
+    }
+  })
   }
 
   function removeFile(myFile) {
@@ -185,13 +185,13 @@ async function readFile(file) {
                         />
 
                         <template v-else>
-                            <template v-if="myFile.file.type === 'video/mp4'">
-                              <VideoCameraIcon class="w-10 h-10 mb-3" />
-                            </template>
-                            <template v-else>
-                              <PaperClipIcon class="w-10 h-10 mb-3" />
-                            </template>
-                            <small class="text-center">{{myFile.file.name}}</small>
+                          <template v-if="myFile.file.type === 'video/mp4'">
+                            <VideoCameraIcon class="w-10 h-10 mb-3" />
+                          </template>
+                          <template v-else>
+                            <PaperClipIcon class="w-10 h-10 mb-3" />
+                          </template>
+                          <small class="text-center">{{myFile.file.name}}</small>
                         </template>
                       </div>
                     </template>
@@ -199,11 +199,7 @@ async function readFile(file) {
                 </div>
 
                 <div class=" flex gap-2 py-3 px-4">
-                  <button
-                    type="button"
-                    class="flex items-center justify-center rounded-md bg-sky-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-sky-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600 w-full relative"
-                    @click="handleSubmit"
-                  >
+                  <button type="button" class="btn-outline" @click="handleSubmit">
                     <PaperClipIcon class="w-4 h-4 mr-2" />
                     Attach Files
                     <input
@@ -213,11 +209,7 @@ async function readFile(file) {
                       multiple
                       class="absolute left-0 top-0 right-0 bottom-0 opacity-0">
                   </button>
-                  <button
-                    type="button"
-                    class="flex items-center justify-center rounded-md bg-sky-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-sky-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-600 w-full"
-                    @click="handleSubmit"
-                  >
+                  <button type="button" class="btn-not-outline" @click="handleSubmit">
                     <BookmarkIcon class="w-4 h-4 mr-2" />
                     Submit
                   </button>
