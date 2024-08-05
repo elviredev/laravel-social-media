@@ -88,7 +88,7 @@ function deletePost() {
     </div>
 
     <!-- Contenu article -->
-    <div class="mb-3">
+    <div class="mb-8">
       <Disclosure v-slot="{ open }">
         <div class="ck-content-output" v-if="!open" v-html="post.body.substring(0, 200)" />
         <DisclosurePanel>
@@ -103,11 +103,18 @@ function deletePost() {
     </div>
 
     <!-- Pièces Jointes -->
-    <div class="grid grid-cols-2 gap-3 lg:grid-cols-3 mb-3">
-      <template v-for="attachment of post.attachments">
+    <div class="grid gap-3 mb-6" :class="[
+      post.attachments.length === 1 ? 'grid-cols-1' : 'grid-cols-2'
+    ]">
+      <template v-for="(attachment, index) of post.attachments.slice(0, 4)">
         <div class="group aspect-square bg-blue-100 text-gray-500 flex flex-col items-center justify-center relative">
+          <!-- Affiche nb files en + -->
+          <div v-if="index === 3"
+               class="absolute left-0 top-0 right-0 bottom-0 z-10 bg-black/30 text-white flex items-center justify-center text-xl">
+            +{{ post.attachments.length - 4 }} more
+          </div>
           <!-- Bouton Icon Download -->
-          <button class="opacity-0 group-hover:opacity-100 transition-all w-8 h-8 flex items-center justify-center bg-gray-700 text-gray-100 rounded absolute right-2 top-2 cursor-pointer hover:bg-gray-800">
+          <button class="z-20 opacity-0 group-hover:opacity-100 transition-all w-8 h-8 flex items-center justify-center bg-gray-700 text-gray-100 rounded absolute right-2 top-2 cursor-pointer hover:bg-gray-800">
             <ArrowDownTrayIcon class="w-4 h-4"/>
           </button>
 
@@ -115,7 +122,7 @@ function deletePost() {
             v-if="isImage(attachment)"
             :src="attachment.url"
             alt=""
-            class="object-cover aspect-square"
+            class="object-contain aspect-square"
           />
 
           <template v-else>

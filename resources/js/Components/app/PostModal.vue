@@ -34,7 +34,8 @@
 
   const form = useForm({
     id: null,
-    body: ''
+    body: '',
+    attachments: []
   })
 
   const show = computed({
@@ -52,24 +53,27 @@
 
   function closeModal() {
     show.value = false
+    resetModal()
+  }
+
+  function resetModal() {
     form.reset()
     attachmentFiles.value = []
   }
 
   function handleSubmit() {
+    form.attachments = attachmentFiles.value.map((myFile) => myFile.file)
     if (form.id) { // update Post
       form.put(route('post.update', props.post.id), {
         preserveScroll: true,
         onSuccess: () => {
-          show.value = false
-          form.reset()
+          closeModal()
         }
       })
     } else { // create Post
       form.post(route('post.create'), {
         onSuccess: () => {
-          show.value = false
-          form.reset()
+          closeModal()
         }
       });
     }
@@ -113,6 +117,10 @@ async function readFile(file) {
   })
   }
 
+  /**
+   * Supprimer une pièce-jointe de l'aperçu
+   * @param myFile
+   */
   function removeFile(myFile) {
     attachmentFiles.value = attachmentFiles.value.filter(file => file !== myFile)
   }
@@ -122,7 +130,7 @@ async function readFile(file) {
 <template>
   <teleport to="body">
     <TransitionRoot appear :show="show" as="template">
-      <Dialog as="div" @close="closeModal" class="relative z-10">
+      <Dialog as="div" @close="closeModal" class="relative z-50">
         <TransitionChild
           as="template"
           enter="duration-300 ease-out"
@@ -167,9 +175,11 @@ async function readFile(file) {
                     :config="editorConfig">
                   </ckeditor>
                   <!-- Aperçu pièces-jointes -->
-                  <div class="grid grid-cols-2 gap-3 lg:grid-cols-3 my-3">
+                  <div class="grid gap-3 my-3" :class="[
+                    attachmentFiles.length === 1 ? 'grid-cols-1' : 'grid-cols-2'
+                  ]">
                     <template v-for="myFile of attachmentFiles">
-                      <div class="group aspect-square bg-sky-100 text-gray-500 flex flex-col items-center justify-center relative">
+                      <div class="group aspect-square bg-sky-100 text-gray-500 flex flex-col items-center justify-center relative ">
                         <button
                           @click="removeFile(myFile)"
                           class="absolute z-20 right-3 top-3 w-7 h-7 flex items-center justify-center bg-black/60 text-white rounded-full hover:bg-black/90"
@@ -181,7 +191,7 @@ async function readFile(file) {
                           v-if="isImage(myFile.file)"
                           :src="myFile.url"
                           alt=""
-                          class="object-cover aspect-square"
+                          class="object-contain aspect-square"
                         />
 
                         <template v-else>
@@ -191,7 +201,9 @@ async function readFile(file) {
                           <template v-else>
                             <PaperClipIcon class="w-10 h-10 mb-3" />
                           </template>
-                          <small class="text-center">{{myFile.file.name}}</small>
+                          <small class="text-center break-words w-full">
+                            {{myFile.file.name}}
+                          </small>
                         </template>
                       </div>
                     </template>
