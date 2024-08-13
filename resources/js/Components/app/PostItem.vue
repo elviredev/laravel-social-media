@@ -35,7 +35,7 @@ function deletePost() {
     <div class="flex items-center justify-between mb-3">
       <PostUserHeader :post="post" />
       <!-- Menu Dropdown -->
-      <Menu as="div" class="relative inline-block text-left">
+      <Menu as="div" class="relative z-10 inline-block text-left">
         <div>
           <MenuButton class="w-8 h-8 rounded-full hover:bg-black/5 transition flex items-center justify-center">
             <EllipsisVerticalIcon
@@ -109,7 +109,7 @@ function deletePost() {
       <template v-for="(attachment, index) of post.attachments.slice(0, 4)">
         <div class="group aspect-square bg-blue-100 text-gray-500 flex flex-col items-center justify-center relative">
           <!-- Affiche nb files en + -->
-          <div v-if="index === 3"
+          <div v-if="index === 3 && post.attachments.length > 4"
                class="absolute left-0 top-0 right-0 bottom-0 z-10 bg-black/30 text-white flex items-center justify-center text-xl">
             +{{ post.attachments.length - 4 }} more
           </div>
