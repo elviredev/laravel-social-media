@@ -1,13 +1,13 @@
 <script setup>
   import { computed, ref, watch } from 'vue'
   import { TransitionRoot, TransitionChild, Dialog, DialogPanel, DialogTitle } from '@headlessui/vue'
-  import PostUserHeader from "@/Components/app/PostUserHeader.vue";
   import { XMarkIcon, BookmarkIcon, ArrowUturnLeftIcon } from '@heroicons/vue/24/solid'
   import { PaperClipIcon, VideoCameraIcon } from "@heroicons/vue/24/outline/index.js";
   import { useForm } from "@inertiajs/vue3";
   import { ClassicEditor, Bold, Essentials, Italic, Heading, Paragraph, List, Link, Indent, BlockQuote } from "ckeditor5";
   import 'ckeditor5/ckeditor5.css';
   import { isImage } from "@/helpers.js";
+  import PostUserHeader from "@/Components/app/PostUserHeader.vue";
 
   const editor = ClassicEditor
   const editorConfig = {
@@ -243,7 +243,7 @@ async function readFile(file) {
                 </div>
 
                 <div class=" flex gap-2 py-3 px-4">
-                  <button type="button" class="btn-outline" @click="handleSubmit">
+                  <button type="button" class="btn-outline" >
                     <PaperClipIcon class="w-4 h-4 mr-2" />
                     Attach Files
                     <input

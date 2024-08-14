@@ -1,6 +1,6 @@
 <script setup>
 import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/vue'
-import { ArrowDownTrayIcon, DocumentIcon, HandThumbUpIcon, ChatBubbleLeftRightIcon } from '@heroicons/vue/24/outline'
+import { ArrowDownTrayIcon, PaperClipIcon, HandThumbUpIcon, ChatBubbleLeftRightIcon } from '@heroicons/vue/24/outline'
 import { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/vue'
 import { PencilIcon, TrashIcon, EllipsisVerticalIcon } from '@heroicons/vue/20/solid'
 import PostUserHeader from "@/Components/app/PostUserHeader.vue";
@@ -11,9 +11,7 @@ const props = defineProps({
     post: Object
 })
 
-const emit = defineEmits(['editClick'])
-
-
+const emit = defineEmits(['editClick', 'attachmentClick'])
 
 function openEditModal() {
   emit('editClick', props.post)
@@ -25,6 +23,10 @@ function deletePost() {
       preserveScroll: true,
     })
   }
+}
+
+function openAttachment(index) {
+  emit("attachmentClick", props.post, index)
 }
 
 </script>
@@ -107,7 +109,10 @@ function deletePost() {
       post.attachments.length === 1 ? 'grid-cols-1' : 'grid-cols-2'
     ]">
       <template v-for="(attachment, index) of post.attachments.slice(0, 4)">
-        <div class="group aspect-square bg-blue-100 text-gray-500 flex flex-col items-center justify-center relative">
+        <div
+          @click="openAttachment(index)"
+          class="group aspect-square bg-blue-100 text-gray-500 flex flex-col items-center justify-center relative cursor-pointer"
+        >
           <!-- Affiche nb files en + -->
           <div v-if="index === 3 && post.attachments.length > 4"
                class="absolute left-0 top-0 right-0 bottom-0 z-10 bg-black/30 text-white flex items-center justify-center text-xl">
@@ -128,10 +133,10 @@ function deletePost() {
             class="object-contain aspect-square"
           />
 
-          <template v-else>
-            <DocumentIcon class="w-12 h-12" />
+          <div v-else class="flex flex-col justify-center items-center">
+            <PaperClipIcon class="w-12 h-12 mb-3" />
             <small>{{attachment.name}}</small>
-          </template>
+          </div>
         </div>
       </template>
     </div>
