@@ -3,7 +3,7 @@
   import { TransitionRoot, TransitionChild, Dialog, DialogPanel, DialogTitle } from '@headlessui/vue'
   import { XMarkIcon, BookmarkIcon, ArrowUturnLeftIcon } from '@heroicons/vue/24/solid'
   import { PaperClipIcon, VideoCameraIcon } from "@heroicons/vue/24/outline/index.js";
-  import { useForm } from "@inertiajs/vue3";
+  import {useForm, usePage} from "@inertiajs/vue3";
   import { ClassicEditor, Bold, Essentials, Italic, Heading, Paragraph, List, Link, Indent, BlockQuote } from "ckeditor5";
   import 'ckeditor5/ckeditor5.css';
   import { isImage } from "@/helpers.js";
@@ -24,6 +24,11 @@
   })
 
   /**
+   * variable globale provenant de HandleInertiaRequests.php
+   */
+  const attachmentExtensions = usePage().props.attachmentExtensions;
+
+  /**
    * {
    *   file: File,
    *   url: ''
@@ -31,6 +36,8 @@
    * @type {Ref<UnwrapRef<*[]>>}
    */
   const attachmentFiles = ref([])
+  const attachmentErrors = ref([])
+  const showExtensionsText = ref(false)
 
   const form = useForm({
     body: '',
@@ -64,27 +71,47 @@
   function resetModal() {
     form.reset()
     attachmentFiles.value = []
-    props.post.attachments.forEach(file => file.deleted = false)
+    showExtensionsText.value = false
+    attachmentErrors.value = []
+    if (props.post.attachments) {
+      props.post.attachments.forEach(file => file.deleted = false)
+    }
   }
 
   function handleSubmit() {
     form.attachments = attachmentFiles.value.map((myFile) => myFile.file)
-    console.log(form)
+    // console.log(form)
     if (props.post.id) { // update Post
       form._method = 'PUT'
       form.post(route('post.update', props.post.id), {
         preserveScroll: true,
         onSuccess: () => {
           closeModal()
+        },
+        onError: (errors) => {
+          processErrors(errors)
         }
       })
     } else { // create Post
       form.post(route('post.create'), {
         onSuccess: () => {
           closeModal()
+        },
+        onError: (errors) => {
+          processErrors(errors)
         }
       });
     }
+  }
+
+  function processErrors(errors) {
+    for (const key in errors) {
+      if (key.includes('.')) {
+        const [, index] = key.split('.')
+        attachmentErrors.value[index] = errors[key]
+      }
+    }
+    console.error(errors)
   }
 
 /**
@@ -94,7 +121,16 @@
  */
 async function onAttachmentChoose($event) {
   // console.log($event.target.files)
+  showExtensionsText.value = false
   for (const file of $event.target.files) {
+    // récupérer extension depuis le name
+    let parts = file.name.split('.')
+    // récupérer la dernière partie
+    let ext = parts.pop().toLowerCase()
+    if (!attachmentExtensions.includes(ext)) {
+      showExtensionsText.value = true
+    }
+
     const myFile = {
       file,
       url: await readFile(file)
@@ -102,7 +138,6 @@ async function onAttachmentChoose($event) {
     attachmentFiles.value.push(myFile)
   }
   $event.target.value = null
-  console.log(attachmentFiles.value)
 }
 
 /**
@@ -196,12 +231,22 @@ async function readFile(file) {
                     v-model="form.body"
                     :config="editorConfig">
                   </ckeditor>
+
+                  <!-- Information sur les extensions de fichiers autorisés -->
+                  <div v-if="showExtensionsText" class="border-l-4 border-amber-500 py-2 px-3 bg-amber-100 mt-3 text-gray-800">
+                    Files must be one of the following extensions
+                    <small>{{ attachmentExtensions.join(', ') }}</small>
+                  </div>
+
                   <!-- Aperçu pièces-jointes -->
                   <div class="grid gap-3 my-3" :class="[
                     computedAttachments.length === 1 ? 'grid-cols-1' : 'grid-cols-2'
                   ]">
-                    <template v-for="myFile of computedAttachments">
-                      <div class="group aspect-square bg-sky-100 text-gray-500 flex flex-col items-center justify-center relative ">
+                    <div v-for="(myFile, index) of computedAttachments">
+                      <div
+                        class="group aspect-square bg-sky-100 text-gray-500 flex flex-col items-center justify-center relative border"
+                        :class="attachmentErrors[index] ? 'border-red-500' : ''"
+                      >
                         <div v-if="myFile.deleted" class="absolute left-0 bottom-0 right-0 py-2 px-3 bg-black text-sm text-white flex justify-between items-center z-10">
                           To be deleted
                           <ArrowUturnLeftIcon @click="undoDelete(myFile)" class="w-4 h-4 cursor-pointer" />
@@ -224,7 +269,7 @@ async function readFile(file) {
 
                         <div
                           v-else
-                          class="flex flex-col justify-center items-center"
+                          class="flex flex-col justify-center items-center px-3"
                           :class="myFile.deleted ? 'opacity-50' : ''"
                         >
                           <template v-if="(myFile.file || myFile).type === 'video/mp4'">
@@ -238,7 +283,8 @@ async function readFile(file) {
                           </small>
                         </div>
                       </div>
-                    </template>
+                     <small class="text-red-500"> {{ attachmentErrors[index] }}</small>
+                    </div>
                   </div>
                 </div>
 
