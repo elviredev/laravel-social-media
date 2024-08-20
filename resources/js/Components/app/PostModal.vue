@@ -37,7 +37,8 @@
    */
   const attachmentFiles = ref([])
   const attachmentErrors = ref([])
-  const showExtensionsText = ref(false)
+  const formErrors = ref({})
+
 
   const form = useForm({
     body: '',
@@ -55,6 +56,20 @@
       return [...attachmentFiles.value, ...(props.post.attachments || [])]
   })
 
+  const showExtensionsText = computed(() => {
+    for (let myFile of attachmentFiles.value) {
+      const file = myFile.file
+      // récupérer extension depuis le name
+      let parts = file.name.split('.')
+      // récupérer la dernière partie
+      let ext = parts.pop().toLowerCase()
+      if (!attachmentExtensions.includes(ext)) {
+        return true
+      }
+    }
+    return false
+  })
+
   const emit = defineEmits(['update:modelValue', 'hide'])
 
   watch(() => props.post, () => {
@@ -70,8 +85,8 @@
 
   function resetModal() {
     form.reset()
+    formErrors.value = {}
     attachmentFiles.value = []
-    showExtensionsText.value = false
     attachmentErrors.value = []
     if (props.post.attachments) {
       props.post.attachments.forEach(file => file.deleted = false)
@@ -105,6 +120,7 @@
   }
 
   function processErrors(errors) {
+    formErrors.value = errors
     for (const key in errors) {
       if (key.includes('.')) {
         const [, index] = key.split('.')
@@ -121,16 +137,7 @@
  */
 async function onAttachmentChoose($event) {
   // console.log($event.target.files)
-  showExtensionsText.value = false
   for (const file of $event.target.files) {
-    // récupérer extension depuis le name
-    let parts = file.name.split('.')
-    // récupérer la dernière partie
-    let ext = parts.pop().toLowerCase()
-    if (!attachmentExtensions.includes(ext)) {
-      showExtensionsText.value = true
-    }
-
     const myFile = {
       file,
       url: await readFile(file)
@@ -232,10 +239,14 @@ async function readFile(file) {
                     :config="editorConfig">
                   </ckeditor>
 
-                  <!-- Information sur les extensions de fichiers autorisés -->
+                  <!-- Information sur les extensions de fichiers autorisées -->
                   <div v-if="showExtensionsText" class="border-l-4 border-amber-500 py-2 px-3 bg-amber-100 mt-3 text-gray-800">
                     Files must be one of the following extensions
                     <small>{{ attachmentExtensions.join(', ') }}</small>
+                  </div>
+                  <!-- Affichage des erreurs de validation des pièces-jointes -->
+                  <div v-if="formErrors.attachments" class="border-l-4 border-red-500 py-2 px-3 bg-red-100 mt-3 text-gray-800">
+                    {{ formErrors.attachments }}
                   </div>
 
                   <!-- Aperçu pièces-jointes -->
