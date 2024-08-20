@@ -3,9 +3,10 @@ import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/vue'
 import { ArrowDownTrayIcon, PaperClipIcon, HandThumbUpIcon, ChatBubbleLeftRightIcon } from '@heroicons/vue/24/outline'
 import { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/vue'
 import { PencilIcon, TrashIcon, EllipsisVerticalIcon } from '@heroicons/vue/20/solid'
-import PostUserHeader from "@/Components/app/PostUserHeader.vue";
 import { router } from "@inertiajs/vue3";
 import { isImage } from "@/helpers.js";
+import axiosClient from "@/axiosClient.js";
+import PostUserHeader from "@/Components/app/PostUserHeader.vue";
 
 const props = defineProps({
     post: Object
@@ -27,6 +28,16 @@ function deletePost() {
 
 function openAttachment(index) {
   emit("attachmentClick", props.post, index)
+}
+
+function sendReaction() {
+  axiosClient.post(route('post.reaction', props.post), {
+    reaction: 'like'
+  })
+    .then(({data}) => {
+      props.post.current_user_has_reaction = data.current_user_has_reaction
+      props.post.num_of_reactions = data.num_of_reactions
+    })
 }
 
 </script>
@@ -111,7 +122,7 @@ function openAttachment(index) {
       <template v-for="(attachment, index) of post.attachments.slice(0, 4)">
         <div
           @click="openAttachment(index)"
-          class="group aspect-square bg-blue-100 text-gray-500 flex flex-col items-center justify-center relative cursor-pointer"
+          class="group aspect-square bg-sky-100 text-gray-500 flex flex-col items-center justify-center relative cursor-pointer"
         >
           <!-- Affiche nb files en + -->
           <div v-if="index === 3 && post.attachments.length > 4"
@@ -144,9 +155,18 @@ function openAttachment(index) {
 
     <!-- Like & Comments -->
     <div class="flex gap-2">
-      <button class="flex gap-1 items-center justify-center py-2 px-4 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg flex-1">
+      <button
+        @click="sendReaction"
+        class="flex gap-1 items-center justify-center py-2 px-4 text-gray-800 rounded-lg flex-1"
+        :class="[
+          post.current_user_has_reaction ?
+          'bg-sky-100 hover:bg-sky-200' :
+          'bg-gray-100 hover:bg-gray-200',
+        ]"
+      >
         <HandThumbUpIcon class="w-6 h-6" />
-        Like
+        <span class="mr-2">{{ post.num_of_reactions }}</span>
+        {{ post.current_user_has_reaction ? 'Unlike' : 'Like' }}
       </button>
       <button class="flex gap-1 items-center justify-center py-2 px-4 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg flex-1">
         <ChatBubbleLeftRightIcon class="w-6 h-6" />

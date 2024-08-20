@@ -1,13 +1,17 @@
 <?php
 namespace App\Http\Controllers;
 
+use App\Http\Enums\PostReactionEnum;
 use App\Http\Requests\StorePostRequest;
 use App\Http\Requests\UpdatePostRequest;
 use App\Models\Post;
 use App\Models\PostAttachment;
+use App\Models\PostReaction;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class PostController extends Controller
 {
@@ -133,5 +137,40 @@ class PostController extends Controller
 
     return response()
       ->download(Storage::disk('public')->path($attachment->path), $attachment->name);
+  }
+
+  public function postReaction(Request $request, Post $post)
+  {
+    // obtenir les data après leur validation
+    $data = $request->validate([
+      'reaction' => [Rule::enum(PostReactionEnum::class)]
+    ]);
+
+    // si l'utilisateur actuel a déja créé une réaction sur ce post, on la supprime sinon on l'a créé en BDD
+    $userId = Auth::id();
+    $reaction = PostReaction::where('user_id', $userId)->where('post_id', $post->id)->first();
+
+    if ($reaction) {
+      $hasReaction = false;
+      // supprimer totalement la reaction existante en bdd
+      $reaction->delete();
+    } else {
+      $hasReaction = true;
+      // créer la reaction en bdd
+      PostReaction::create([
+        'post_id' => $post->id,
+        'user_id' => $userId,
+        'type' => $data['reaction']
+      ]);
+    }
+
+    // nombre total de réactions sur un post
+    $reactions = PostReaction::where('post_id', $post->id)->count();
+
+    // envoyer la réponse
+    return response([
+      'num_of_reactions' => $reactions,
+      'current_user_has_reaction' => $hasReaction
+    ]);
   }
 }
