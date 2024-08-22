@@ -1,5 +1,5 @@
 <script setup>
-import { addHours, format } from 'date-fns'
+import {adjustTime} from "@/helpers.js";
 
 defineProps({
     post: {
@@ -11,11 +11,6 @@ defineProps({
     }
   })
 
-  // ajouter 2h à l'heure affichée pour être en heure locale
-  function adjustTime(date) {
-    const adjustHours =  addHours(new Date(date), 2)
-    return format(adjustHours, 'y-MM-dd HH:mm:ss')
-  }
 </script>
 
 <template>
@@ -24,7 +19,7 @@ defineProps({
       <img
         :src="post.user.avatar_url"
         alt="avatar"
-        class="w-[40px] rounded-full border border-2 transition-all hover:border-blue-500"
+        class="w-[40px] rounded-full border border-2 transition-all hover:border-sky-500"
       >
     </a>
     <div>

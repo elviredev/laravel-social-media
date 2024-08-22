@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 
 const props = defineProps({
   modelValue: {
@@ -19,7 +19,7 @@ const textareaRef = ref(null);
 function autoResize() {
   if (textareaRef.value) {
     textareaRef.value.style.height = 'auto';
-    textareaRef.value.style.height = textareaRef.value.scrollHeight + 'px';
+    textareaRef.value.style.height = (textareaRef.value.scrollHeight + 2) + 'px';
   }
 }
 
@@ -29,14 +29,16 @@ onMounted(() => {
   }
 });
 
+watch(() => props.modelValue, () => {
+  setTimeout(() => {
+    autoResize()
+  }, 10)
+})
+
 defineExpose({ focus: () => textareaRef.value.focus() });
 
 function onInputChange($event) {
   emit('update:modelValue', $event.target.value);
-  // autoresize du textarea selon le besoin du texte saisi
-  if (props.autoResize) {
-    autoResize();
-  }
 }
 
 onMounted(() => {

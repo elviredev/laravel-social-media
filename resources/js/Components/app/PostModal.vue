@@ -8,6 +8,7 @@
   import 'ckeditor5/ckeditor5.css';
   import { isImage } from "@/helpers.js";
   import PostUserHeader from "@/Components/app/PostUserHeader.vue";
+  import SkyButton from "@/Components/SkyButton.vue";
 
   const editor = ClassicEditor
   const editorConfig = {
@@ -300,7 +301,7 @@ async function readFile(file) {
                 </div>
 
                 <div class=" flex gap-2 py-3 px-4">
-                  <button type="button" class="btn-outline" >
+                  <SkyButton :type="button" :outline="true" >
                     <PaperClipIcon class="w-4 h-4 mr-2" />
                     Attach Files
                     <input
@@ -309,11 +310,11 @@ async function readFile(file) {
                       type="file"
                       multiple
                       class="absolute left-0 top-0 right-0 bottom-0 opacity-0">
-                  </button>
-                  <button type="button" class="btn-not-outline" @click="handleSubmit">
+                  </SkyButton>
+                  <SkyButton :type="button" :outline="false" @click="handleSubmit">
                     <BookmarkIcon class="w-4 h-4 mr-2" />
                     Submit
-                  </button>
+                  </SkyButton>
                 </div>
               </DialogPanel>
             </TransitionChild>
