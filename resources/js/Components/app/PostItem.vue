@@ -1,8 +1,6 @@
 <script setup>
 import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/vue'
 import { ArrowDownTrayIcon, PaperClipIcon, HandThumbUpIcon, ChatBubbleLeftRightIcon } from '@heroicons/vue/24/outline'
-import { Menu, MenuButton, MenuItems, MenuItem } from '@headlessui/vue'
-import { PencilIcon, TrashIcon, EllipsisVerticalIcon } from '@heroicons/vue/20/solid'
 import { ref } from "vue";
 import { router, usePage } from "@inertiajs/vue3";
 import { isImage } from "@/helpers.js";
@@ -11,15 +9,16 @@ import PostUserHeader from "@/Components/app/PostUserHeader.vue";
 import InputTextarea from "@/Components/InputTextarea.vue";
 import SkyButton from "@/Components/SkyButton.vue";
 import { adjustTime } from "@/helpers.js";
-import ReadMoreReadLess from "@/Components/ReadMoreReadLess.vue";
+import ReadMoreReadLess from "@/Components/app/ReadMoreReadLess.vue";
+import EditDeleteDropdown from "@/Components/app/EditDeleteDropdown.vue";
 
 const authUser = usePage().props.auth.user;
+const newCommentText = ref('')
+const editingComment = ref(null)
 
 const props = defineProps({
     post: Object
 })
-
-const newCommentText = ref('')
 
 const emit = defineEmits(['editClick', 'attachmentClick'])
 
@@ -60,6 +59,37 @@ function createComment() {
     })
 }
 
+function deleteComment(comment) {
+  if (!window.confirm('Are you sure you want to delete this comment?')) {
+    return false
+  }
+  axiosClient.delete(route('post.comment.delete', comment.id))
+    .then(() => {
+      props.post.comments = props.post.comments.filter(c => c.id !== comment.id)
+      props.post.num_of_comments--
+    })
+}
+
+function startCommentEdit(comment) {
+  editingComment.value = {
+    id: comment.id,
+    comment: comment.comment.replace(/<br\s*\/?>/gi, '\n')
+  }
+}
+
+function updateComment() {
+  axiosClient.put(route('post.comment.update', editingComment.value.id), editingComment.value)
+    .then(({data}) => {
+      editingComment.value = null
+      props.post.comments = props.post.comments.map((c) => {
+        if (c.id === data.id) {
+          return data
+        }
+        return c
+      })
+    })
+}
+
 </script>
 
 <template>
@@ -68,56 +98,7 @@ function createComment() {
     <div class="flex items-center justify-between mb-3">
       <PostUserHeader :post="post" />
       <!-- Menu Dropdown -->
-      <Menu as="div" class="relative z-10 inline-block text-left">
-        <div>
-          <MenuButton class="w-8 h-8 rounded-full hover:bg-black/5 transition flex items-center justify-center">
-            <EllipsisVerticalIcon
-              class="w-5 h-5"
-              aria-hidden="true"
-            />
-          </MenuButton>
-          </div>
-          <transition
-            enter-active-class="transition duration-100 ease-out"
-            enter-from-class="transform scale-95 opacity-0"
-            enter-to-class="transform scale-100 opacity-100"
-            leave-active-class="transition duration-75 ease-in"
-            leave-from-class="transform scale-100 opacity-100"
-            leave-to-class="transform scale-95 opacity-0"
-          >
-            <MenuItems
-              class="absolute right-0 mt-2 w-32 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black/5 focus:outline-none"
-            >
-              <div class="px-1 py-1">
-                <MenuItem v-slot="{ active }">
-                  <button
-                    @click="openEditModal"
-                    :class="[active
-                      ? 'bg-sky-500 text-white'
-                      : 'text-gray-900',
-                      'group flex w-full items-center rounded-md px-2 py-2 text-sm',
-                    ]"
-                  >
-                    <PencilIcon class="mr-2 h-5 w-5" aria-hidden="true"/>
-                    Edit
-                  </button>
-                </MenuItem>
-                <MenuItem v-slot="{ active }">
-                  <button
-                    @click="deletePost"
-                    :class="[
-                      active ? 'bg-sky-500 text-white' : 'text-gray-900',
-                      'group flex w-full items-center rounded-md px-2 py-2 text-sm',
-                    ]"
-                  >
-                    <TrashIcon class="mr-2 h-5 w-5" aria-hidden="true"/>
-                    Delete
-                  </button>
-                </MenuItem>
-              </div>
-            </MenuItems>
-          </transition>
-        </Menu>
+      <EditDeleteDropdown :user="post.user" @edit="openEditModal" @delete="deletePost" />
     </div>
 
     <!-- Contenu article -->
@@ -191,7 +172,7 @@ function createComment() {
       </div>
       <!-- Comments Section -->
       <DisclosurePanel class="mt-3">
-        <!-- Créate comment -->
+        <!-- Create comment -->
         <div class="flex gap-2 mb-3">
              <a href="javascript:void(0)">
                <img
@@ -221,27 +202,60 @@ function createComment() {
         <!-- Display comments -->
         <div>
           <div v-for="comment of post.comments" :key="comment.id" class="mb-4">
-            <div class="flex gap-2">
-              <a href="javascript:void(0)">
-                <img
-                  :src="comment.user.avatar_url"
-                  alt="avatar"
-                  class="w-[40px] rounded-full border border-2 transition-all hover:border-sky-500"
-                >
-              </a>
-              <div>
-                <h4 class="font-bold">
-                  <a href="javascript:void(0)" class="hover:underline">
-                    {{comment.user.name}}
-                  </a>
-                </h4>
-                <small class="text-gray-400 text-xs">
-                  {{adjustTime(comment.updated_at)}}
-                </small>
+            <div class="flex gap-2 justify-between">
+              <div class="flex gap-2">
+                <a href="javascript:void(0)">
+                  <img
+                    :src="comment.user.avatar_url"
+                    alt="avatar"
+                    class="w-[40px] rounded-full border border-2 transition-all hover:border-sky-500"
+                  >
+                </a>
+                <div>
+                  <h4 class="font-bold">
+                    <a href="javascript:void(0)" class="hover:underline">
+                      {{comment.user.name}}
+                    </a>
+                  </h4>
+                  <small class="text-gray-400 text-xs">
+                    {{adjustTime(comment.updated_at)}}
+                  </small>
+                </div>
               </div>
+              <!-- Menu Dropdown -->
+              <EditDeleteDropdown
+                :user="comment.user"
+                @edit="startCommentEdit(comment)"
+                @delete="deleteComment(comment)"
+              />
             </div>
             <!-- Contenu commentaires -->
-            <ReadMoreReadLess :content="comment.comment" content-class="text-sm flex flex-1 ml-12" />
+            <div  v-if="editingComment && editingComment.id === comment.id" class="ml-12">
+              <!-- Edition d'un commentaire -->
+              <InputTextarea
+                v-model="editingComment.comment"
+                rows="1"
+                class="w-full resize-none max-h-[160px]"
+                placeholder="Enter your comment here"
+              />
+             <div class="flex gap-2 justify-end">
+               <button @click="editingComment = null" class="text-sky-600">cancel</button>
+               <SkyButton
+                 @click="updateComment()"
+                 :type="button"
+                 :outline="true"
+                 class="w-[100px]"
+               >
+                 update
+               </SkyButton>
+             </div>
+            </div>
+            <!-- Affichage du commentaire -->
+            <ReadMoreReadLess
+              v-else
+              :content="comment.comment"
+              content-class="text-sm flex flex-1 ml-12"
+            />
           </div>
         </div>
       </DisclosurePanel>

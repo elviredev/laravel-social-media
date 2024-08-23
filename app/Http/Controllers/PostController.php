@@ -3,6 +3,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Enums\PostReactionEnum;
 use App\Http\Requests\StorePostRequest;
+use App\Http\Requests\UpdateCommentRequest;
 use App\Http\Requests\UpdatePostRequest;
 use App\Http\Resources\CommentResource;
 use App\Models\Comment;
@@ -182,6 +183,12 @@ class PostController extends Controller
     ]);
   }
 
+  /**
+   * Créer un commentaire sur un article
+   * @param Request $request
+   * @param Post $post
+   * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\Routing\ResponseFactory|\Illuminate\Foundation\Application|\Illuminate\Http\Response
+   */
   public function createComment(Request $request, Post $post)
   {
     $data = $request->validate([
@@ -195,6 +202,38 @@ class PostController extends Controller
     ]);
 
     return response(new CommentResource($comment), status: 201);
+  }
+
+  /**
+   * Supprimer un commentaire
+   * @param Comment $comment
+   * @return \Illuminate\Contracts\Foundation\Application|\Illuminate\Contracts\Routing\ResponseFactory|\Illuminate\Foundation\Application|\Illuminate\Http\Response
+   */
+  public function deleteComment(Comment $comment)
+  {
+    if ($comment->user_id !== Auth::id()) {
+      return response("You don't have permission to delete this comment.", 403);
+    }
+    $comment->delete();
+    return response('', 204);
+  }
+
+
+  /**
+   * Modifier un commentaire
+   * @param UpdateCommentRequest $request
+   * @param Comment $comment
+   * @return CommentResource
+   */
+  public function updateComment(UpdateCommentRequest $request, Comment $comment)
+  {
+    $data = $request->validated();
+
+    $comment->update([
+      'comment' => nl2br($data['comment'])
+    ]);
+
+    return new CommentResource($comment);
   }
 
 
