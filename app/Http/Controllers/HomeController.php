@@ -16,13 +16,20 @@ class HomeController extends Controller
       ->withCount('reactions')
       ->withCount('comments')
       ->with([
-        'latest5Comments' => function ($query) {
-          $query->latest()->limit(5);
+        'comments' => function ($query) use ($userId) {
+          $query->withCount('reactions')
+            ->with([
+              'reactions' => function ($query) use ($userId) {
+                $query->where('user_id', $userId);
+              }
+            ]);
         },
         'reactions' => function ($query) use ($userId) {
           $query->where('user_id', $userId);
         }])
-      ->latest()->paginate(20);
+      ->latest()
+      ->paginate(20);
+
     return Inertia::render('Home', [
       'posts' => PostResource::collection($posts)
     ]);

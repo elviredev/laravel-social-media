@@ -1,6 +1,6 @@
 <script setup>
 import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/vue'
-import { ArrowDownTrayIcon, PaperClipIcon, HandThumbUpIcon, ChatBubbleLeftRightIcon } from '@heroicons/vue/24/outline'
+import { ArrowDownTrayIcon, PaperClipIcon, HandThumbUpIcon, ChatBubbleLeftRightIcon, ChatBubbleLeftEllipsisIcon } from '@heroicons/vue/24/outline'
 import { ref } from "vue";
 import { router, usePage } from "@inertiajs/vue3";
 import { isImage } from "@/helpers.js";
@@ -63,7 +63,7 @@ function deleteComment(comment) {
   if (!window.confirm('Are you sure you want to delete this comment?')) {
     return false
   }
-  axiosClient.delete(route('post.comment.delete', comment.id))
+  axiosClient.delete(route('comment.delete', comment.id))
     .then(() => {
       props.post.comments = props.post.comments.filter(c => c.id !== comment.id)
       props.post.num_of_comments--
@@ -78,7 +78,7 @@ function startCommentEdit(comment) {
 }
 
 function updateComment() {
-  axiosClient.put(route('post.comment.update', editingComment.value.id), editingComment.value)
+  axiosClient.put(route('comment.update', editingComment.value.id), editingComment.value)
     .then(({data}) => {
       editingComment.value = null
       props.post.comments = props.post.comments.map((c) => {
@@ -87,6 +87,16 @@ function updateComment() {
         }
         return c
       })
+    })
+}
+
+function sendCommentReaction(comment) {
+  axiosClient.post(route('comment.reaction', comment.id), {
+    reaction: 'like'
+  })
+    .then(({data}) => {
+      comment.current_user_has_reaction = data.current_user_has_reaction
+      comment.num_of_reactions = data.num_of_reactions
     })
 }
 
@@ -229,33 +239,55 @@ function updateComment() {
                 @delete="deleteComment(comment)"
               />
             </div>
-            <!-- Contenu commentaires -->
-            <div  v-if="editingComment && editingComment.id === comment.id" class="ml-12">
-              <!-- Edition d'un commentaire -->
-              <InputTextarea
-                v-model="editingComment.comment"
-                rows="1"
-                class="w-full resize-none max-h-[160px]"
-                placeholder="Enter your comment here"
+            <div class="pl-12">
+              <!-- Contenu commentaires -->
+              <div  v-if="editingComment && editingComment.id === comment.id">
+                <!-- Edition d'un commentaire -->
+                <InputTextarea
+                  v-model="editingComment.comment"
+                  rows="1"
+                  class="w-full resize-none max-h-[160px]"
+                  placeholder="Enter your comment here"
+                />
+                <div class="flex gap-2 justify-end">
+                  <button @click="editingComment = null" class="text-sky-600">cancel</button>
+                  <SkyButton
+                    @click="updateComment()"
+                    :type="button"
+                    :outline="true"
+                    class="w-[100px]"
+                  >
+                    update
+                  </SkyButton>
+                </div>
+              </div>
+              <!-- Affichage du commentaire -->
+              <ReadMoreReadLess
+                v-else
+                :content="comment.comment"
+                content-class="text-sm flex flex-1"
               />
-             <div class="flex gap-2 justify-end">
-               <button @click="editingComment = null" class="text-sky-600">cancel</button>
-               <SkyButton
-                 @click="updateComment()"
-                 :type="button"
-                 :outline="true"
-                 class="w-[100px]"
-               >
-                 update
-               </SkyButton>
-             </div>
+              <!-- like/Unlike Comments-->
+              <div class="mt-1 flex gap-2">
+                <button
+                  @click="sendCommentReaction(comment)"
+                  class="flex items-center text-xs text-sky-600 py-0.5 px-1 rounded-lg"
+                  :class="[
+                    comment.current_user_has_reaction ?
+                    'bg-sky-50 hover:bg-sky-100' :
+                    'hover:bg-sky-50',
+                  ]"
+                >
+                  <HandThumbUpIcon class="w-3 h-3 mr-1" />
+                  <span class="mr-2">{{ comment.num_of_reactions }}</span>
+                  {{ comment.current_user_has_reaction ? 'unlike' : 'like' }}
+                </button>
+                <button class="flex items-center text-xs text-sky-600 py-0.5 px-1 hover:bg-sky-100 rounded-lg">
+                  <ChatBubbleLeftEllipsisIcon class="w-3 h-3 mr-1" />
+                  reply
+                </button>
+              </div>
             </div>
-            <!-- Affichage du commentaire -->
-            <ReadMoreReadLess
-              v-else
-              :content="comment.comment"
-              content-class="text-sm flex flex-1 ml-12"
-            />
           </div>
         </div>
       </DisclosurePanel>
